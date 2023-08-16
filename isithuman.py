@@ -62,7 +62,7 @@ def detectar_rostros(video_capture):
             img_resized = cv2.resize(img_bw, (corner_w, corner_h))
             color_resized = cv2.cvtColor(img_resized, cv2.COLOR_GRAY2BGR)
             frame[corner_y:corner_y+corner_h, corner_x:corner_x+corner_w] = color_resized
-            cv2.rectangle(frame, (corner_x-10, corner_y-10), (corner_x+corner_w+10, corner_y+corner_h+10), (255, 0, 255), 10)
+            cv2.rectangle(frame, (corner_x-10, corner_y-10), (corner_x+corner_w+10, corner_y+corner_h+10), (255, 255, 255), 10)
 
         if len(faces) > 0 and not mostrando_resultado:
             (x, y, w, h) = faces[0]
@@ -77,13 +77,14 @@ def detectar_rostros(video_capture):
         if analizando:
             elapsed = time.time() - start_analisis
             porcentaje = int((elapsed / 5) * 100)
-            dibujar_analisis(frame, porcentaje, colores[color_index])
+            dibujar_analisis(frame, porcentaje, (255,255,255))
             if porcentaje >= 100:
                 analizando = False
                 resultado = random.choice(['HUMANX', 'NO-HUMANX'])
                 mostrando_resultado = True
                 tiempo_resultado = time.time()
-                color_index = (color_index + 1) % len(colores)
+                # color_index = (color_index + 1) % len(colores)
+
         if mostrando_resultado:
             font_size = 3
             font = cv2.FONT_HERSHEY_SIMPLEX
