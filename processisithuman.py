@@ -33,11 +33,10 @@ def agregar_stream_datos(frame):
         cv2.putText(frame, mac, (width - text_size[0] - 10, start_y), font, 0.5, color, 1, cv2.LINE_AA)
         start_y += text_size[1] + 4
 
-def detectar_rostros(video_capture):
+def detectar_rostros(video_capture, out):
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     colores = [(255, 0, 255), (0, 255, 0), (255, 255, 255)]  
     color_index = 2
-
     analizando = False
     porcentaje = 0
     start_analisis = None
@@ -49,10 +48,12 @@ def detectar_rostros(video_capture):
 
     while True:
         ret, frame = video_capture.read()
+        if not ret:
+            break
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-
+        
         # Corner processing
         corner_w = 480
         corner_h = 480
@@ -75,18 +76,27 @@ def detectar_rostros(video_capture):
                 start_analisis = time.time()
 
         agregar_stream_datos(frame)
-        cv2.imshow('Video', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        out.write(frame)
 
-def main():
-    global video_capture
-    video_capture = cv2.VideoCapture(3)
-    video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Cambiar resolución a 640x480 para una relación 4:3
-    video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-    detectar_rostros(video_capture)
+def main(input_video_path, output_video_path):
+    video_capture = cv2.VideoCapture(input_video_path)
+    if not video_capture.isOpened():
+        print("Error al abrir el archivo de video.")
+        return
+
+    # Define el codec y crea un objeto VideoWriter
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Cambia 'XVID' a 'mp4v'
+    fps = video_capture.get(cv2.CAP_PROP_FPS)
+    width = int(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
+
+    detectar_rostros(video_capture, out)
+
     video_capture.release()
-    cv2.destroyAllWindows()
+    out.release()
 
 if __name__ == "__main__":
-    main()
+    input_video_path = "/Users/capo/Desktop/contenido.sensible/renders/vertical_points_001.mp4"  # Cambia a la ruta del video de entrada
+    output_video_path = "/Users/capo/Desktop/contenido.sensible/renders/vvertical_points_AI_001.mp4"  # Cambia a la ruta donde quieres guardar el video procesado
+    main(input_video_path, output_video_path)
